@@ -85,38 +85,43 @@ function love.draw()
 end
 
 function love.keypressed(key, scan, rep)
-    redraw = true
-    if key:isLetter() and #guess < 4 then
-        table.insert(guess, key)
-    elseif key:isLetter() and state == 'wrong' then
-        guess = {}
-        state = false
-        table.insert(guess, key)
-    elseif key == 'backspace' then
-        state = false
-        table.remove(guess)
-    elseif #guess == 4 and (key == 'return' or key == 'kpenter') then
-        local guessed = guess[1]..guess[2]..guess[3]..guess[4]
-        if not array.find(words, guessed) then
-            state = 'wrong'
-        else
-            table.insert(guesses, {
-                colour(guessed,1), guess[1],
-                colour(guessed,2), guess[2],
-                colour(guessed,3), guess[3],
-                colour(guessed,4), guess[4],
-            })
-            guess = {}
-            if guessed == word then
-                state = 'win'
-            elseif #guesses == maxguess then
-                state = 'loss'
+    if (state == 'win' or state == 'loss') then
+        if key == 'c' then -- could check ctrl, but like, why
+            love.system.setClipboardText(shareString)
+        end
+    else
+        redraw = true
+        if key:isLetter() then
+            if state == 'wrong' then
+                guess = {}
+                state = false
+            end
+            if #guess < 4 then
+                table.insert(guess, key)
+            end
+        elseif key == 'backspace' then
+            state = false
+            table.remove(guess)
+        elseif #guess == 4 and (key == 'return' or key == 'kpenter') then
+            local guessed = guess[1]..guess[2]..guess[3]..guess[4]
+            if not array.find(words, guessed) then
+                state = 'wrong'
             else
-                shareString = shareString.."\n"
+                table.insert(guesses, {
+                    colour(guessed,1), guess[1],
+                    colour(guessed,2), guess[2],
+                    colour(guessed,3), guess[3],
+                    colour(guessed,4), guess[4],
+                })
+                guess = {}
+                if guessed == word then
+                    state = 'win'
+                elseif #guesses == maxguess then
+                    state = 'loss'
+                else
+                    shareString = shareString.."\n"
+                end
             end
         end
-    end
-    if state == 'win' and key == 'c' then -- could check ctrl, but like, why
-        love.system.setClipboardText(shareString)
     end
 end
